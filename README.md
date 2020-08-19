@@ -1,24 +1,14 @@
 # studypie-homework
 
-## Project setup
-```
-yarn install
-```
+## 구현 사항
 
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
+1. 날짜별 기본 일정 CRUD
 
-### Compiles and minifies for production
-```
-yarn build
-```
+## 미 구현사항
 
-### Lints and fixes files
-```
-yarn lint
-```
+1. 인터랙션을 통한 이벤트 호출
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## 해야할 것 ..?
+
+1. 디자인 컨셉이 정확해진다면 컴포넌트(header, section, section title ...) 별로 css, html 마크업 분리
+2. 더 nested한 뎁스로 간다면 vuex와 같은 데이터 패턴 라이브러리 적용 고려
