@@ -91,6 +91,7 @@ export default {
         text,
         date: this.currentDate,
         completed: false,
+        priority: 0,
       });
     },
     completeSchedule(schedule) {
@@ -230,8 +231,8 @@ export default {
 }
 
 .button {
-  color: #5aaafa;
-  background: #e6e7e9;
+  color: #007aff;
+  background: #eeeeee;
   border-radius: 8px;
   padding: 16px 24px;
   border: none;

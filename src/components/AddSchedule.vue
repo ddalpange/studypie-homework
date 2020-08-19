@@ -4,7 +4,7 @@
       +
     </button>
     <div class="square square--large square--primary" v-if="toggled">
-      <input type="text" class="square__input" v-model="text" />
+      <input type="text" class="square__input" v-model="text" maxlength="20" />
     </div>
     <div class="button-group" v-if="toggled">
       <button class="button" v-on:click="reset()">
