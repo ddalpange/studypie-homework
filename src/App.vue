@@ -11,36 +11,38 @@
     <main class="main">
       <section class="section">
         <strong class="section__title"
-          >할 일 ({{ notCompletedSchedules.length }})</strong
+          >할 일 ({{
+            currentSchedules.filter((schedule) => !schedule.completed).length
+          }})</strong
         >
         <article class="section__body">
-          <button class="square square--large square--outline">+</button>
-
-          <button
-            v-for="schedule in notCompletedSchedules"
-            v-bind:key="schedule.text"
-            class="square square--large square--primary"
-          >
-            {{ schedule.text }}
-          </button>
-          <input class="square square--large square--primary" />
+          <AddSchedule :addSchedule="addSchedule" />
+          <template v-for="schedule in currentSchedules">
+            <Schedule
+              v-if="!schedule.completed"
+              :key="schedule.text"
+              :schedule="schedule"
+              :completeSchedule="completeSchedule"
+              :removeSchedule="removeSchedule"
+              :editSchedule="editSchedule"
+            />
+          </template>
         </article>
       </section>
       <section class="section">
         <strong class="section__title"
-          >끝난 일 ({{ completedSchedules.length }})</strong
+          >끝난 일 ({{
+            currentSchedules.filter((schedule) => schedule.completed).length
+          }})</strong
         >
         <article class="section__body">
-          <button class="square square--large square--outline">+</button>
-
-          <button
-            v-for="schedule in completedSchedules"
-            v-bind:key="schedule.text"
-            class="square square--large square--primary"
-          >
-            {{ schedule.text }}
-          </button>
-          <input class="square square--large square--primary" />
+          <template v-for="schedule in currentSchedules">
+            <Schedule
+              v-if="schedule.completed"
+              :key="schedule.text"
+              :schedule="schedule"
+            />
+          </template>
         </article>
       </section>
     </main>
@@ -48,40 +50,59 @@
 </template>
 <script>
 import { format, isSameDay } from "date-fns";
+import Schedule from "./components/Schedule";
+import AddSchedule from "./components/AddSchedule";
+import { LocalStorage } from "./utils/LocalStorage";
+
+const SCHEDULES_KEY = "SCHEDULES";
+
 export default {
   name: "App",
-  components: {},
+  use: {},
+  components: {
+    Schedule,
+    AddSchedule,
+  },
   data() {
     return {
-      currentDate: new Date("2020-07-25"),
-      schedules: [
+      currentDate: new Date(2020, 7, 25),
+      schedules: LocalStorage.getItem(SCHEDULES_KEY, []).map((schedule) => {
+        schedule.date = new Date(schedule.date);
+        return schedule;
+      }),
+    };
+  },
+  methods: {
+    addSchedule(text) {
+      this.schedules = [
+        ...this.schedules,
         {
-          date: new Date("2020-07-25"),
-          text: "Hello..",
+          text,
+          date: this.currentDate,
           completed: false,
         },
-        {
-          date: new Date("2020-07-25"),
-          text: "Hello..",
-          completed: true,
-        },
-      ],
-    };
+      ];
+      console.log(this.schedules);
+      LocalStorage.setItem(SCHEDULES_KEY, this.schedules);
+    },
+    completeSchedule(schedule) {
+      this.editSchedule(schedule, { completed: true });
+    },
+    editSchedule(schedule, nextSchedule) {
+      const found = this.schedules.find((s) => s.text === schedule.text);
+      Object.assign(found, nextSchedule);
+      LocalStorage.setItem(SCHEDULES_KEY, this.schedules);
+    },
+    removeSchedule(schedule) {
+      const index = this.schedules.findIndex((s) => s.text === schedule.text);
+      this.schedules.splice(index, 1);
+      LocalStorage.setItem(SCHEDULES_KEY, this.schedules);
+    },
   },
   computed: {
     currentSchedules() {
       return this.schedules.filter((schedule) =>
         isSameDay(schedule.date, this.currentDate)
-      );
-    },
-    completedSchedules() {
-      return this.currentSchedules.filter(
-        (schedule) => schedule.completed === true
-      );
-    },
-    notCompletedSchedules() {
-      return this.currentSchedules.filter(
-        (schedule) => schedule.completed === false
       );
     },
   },
@@ -137,9 +158,6 @@ export default {
 }
 
 .section__body {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
 
 .square {
@@ -147,10 +165,20 @@ export default {
   border: none;
   background: none;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.square__input {
+  border: none;
+  background: transparent;
+  color: white;
+  font-size: inherit;
 }
 
 .square--large {
-  display: block;
+  width: 100%;
   height: 68px;
   border-radius: 12px;
   font-size: 17px;
@@ -167,5 +195,25 @@ export default {
 
 .square--primary:hover {
   background: #081f5c;
+}
+
+.square--disabled {
+  background: #969dab;
+  color: white;
+  text-decoration: line-through;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 16px;
+}
+
+.button {
+  color: #5aaafa;
+  background: #e6e7e9;
+  border-radius: 8px;
+  padding: 16px 24px;
+  border: none;
 }
 </style>
