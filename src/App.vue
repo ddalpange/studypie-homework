@@ -1,12 +1,22 @@
 <template>
   <div id="app">
     <header class="header">
-      <button class="header__button header__button--left">왼</button>
+      <button
+        class="header__button header__button--left"
+        @click="changeCurrentDate(-1)"
+      >
+        &larr;
+      </button>
       <div class="header__title">
         <div class="header__title__year">{{ currentDate | headerYear }}</div>
         <div class="header__title__date">{{ currentDate | headerDate }}</div>
       </div>
-      <button class="header__button header__button--right">오</button>
+      <button
+        class="header__button header__button--right"
+        @click="changeCurrentDate(+1)"
+      >
+        &rarr;
+      </button>
     </header>
     <main class="main">
       <section class="section">
@@ -49,7 +59,7 @@
   </div>
 </template>
 <script>
-import { format, isSameDay } from "date-fns";
+import { format, isSameDay, addDays } from "date-fns";
 import Schedule from "./components/Schedule";
 import AddSchedule from "./components/AddSchedule";
 import { LocalStorage } from "./utils/LocalStorage";
@@ -65,7 +75,7 @@ export default {
   },
   data() {
     return {
-      currentDate: new Date(2020, 7, 25),
+      currentDate: new Date(),
       schedules: LocalStorage.getItem(SCHEDULES_KEY, []).map((schedule) => {
         schedule.date = new Date(schedule.date);
         return schedule;
@@ -73,30 +83,39 @@ export default {
     };
   },
   methods: {
+    changeCurrentDate(delta) {
+      this.currentDate = addDays(this.currentDate, delta);
+    },
     addSchedule(text) {
-      this.schedules = [
-        ...this.schedules,
-        {
-          text,
-          date: this.currentDate,
-          completed: false,
-        },
-      ];
-      console.log(this.schedules);
-      LocalStorage.setItem(SCHEDULES_KEY, this.schedules);
+      this.schedules.push({
+        text,
+        date: this.currentDate,
+        completed: false,
+      });
     },
     completeSchedule(schedule) {
       this.editSchedule(schedule, { completed: true });
     },
     editSchedule(schedule, nextSchedule) {
-      const found = this.schedules.find((s) => s.text === schedule.text);
-      Object.assign(found, nextSchedule);
-      LocalStorage.setItem(SCHEDULES_KEY, this.schedules);
+      this.$set(
+        this.schedules,
+        this.schedules.findIndex((s) => s.text === schedule.text),
+        {
+          ...schedule,
+          ...nextSchedule,
+        }
+      );
     },
     removeSchedule(schedule) {
-      const index = this.schedules.findIndex((s) => s.text === schedule.text);
-      this.schedules.splice(index, 1);
-      LocalStorage.setItem(SCHEDULES_KEY, this.schedules);
+      this.$delete(
+        this.schedules,
+        this.schedules.findIndex((s) => s.text === schedule.text)
+      );
+    },
+  },
+  watch: {
+    schedules(value) {
+      LocalStorage.setItem(SCHEDULES_KEY, value);
     },
   },
   computed: {
@@ -160,6 +179,7 @@ export default {
 .section__body {
 }
 
+/* TODO: Directive */
 .square {
   margin-bottom: 16px;
   border: none;
